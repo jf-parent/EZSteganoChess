@@ -1,0 +1,9 @@
+* TODO
+** Character set
+** Character mapping
+** Encode message
+** Decode message
+** Generation parameters (char-map,rules,etc)
+** Generate text with FENs
+
+* Usage
