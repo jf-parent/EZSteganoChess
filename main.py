@@ -5,6 +5,8 @@ from typing import AnyStr, List, Tuple, Dict
 import chess
 from chess import Board, parse_square, Piece
 
+from fake_endgame import make_fake_endgame
+
 UNKNOWN_CHAR = '❏'
 
 CHARS = [
@@ -13,9 +15,12 @@ CHARS = [
     'u', 'v', 'w', 'x', 'y', 'z', '1', '2', '3', '4',
     '5', '6', '7', '8', '9', '0', '.', ',', '!', '?',
     ':', '#', '@', '{', '}', '(', ')', '[', ']', '/',
-    '', '', '', '', '', '', '', '', '', '', '',
+    '*', ';', '$', '_', '=', '|', '/', '^', '%', '#', UNKNOWN_CHAR,
     '-', '+', ' ', '\r'
 ]
+
+def create_char_map_piece_waterfall() -> List[str]:
+    pass
 
 def create_char_map() -> Tuple[Dict[str, str], Dict[int, str]]:
     square_to_char_map = {}
@@ -103,7 +108,9 @@ def encode(message: AnyStr) -> List[str]:
 
         board.clear_board()
 
-        square = char_to_square_map.get(c, UNKNOWN_CHAR)
+        square = char_to_square_map.get(c)
+        if square is None:
+            square = char_to_square_map[UNKNOWN_CHAR]
 
         board.set_piece_at(square, Piece.from_symbol('q'))
 
@@ -117,8 +124,10 @@ def encode(message: AnyStr) -> List[str]:
 
 
 if __name__ == "__main__":
-    encoded = encode("Hi Martin, would you like to have a nice cup of tea with Santas? Thanks, Jean")
-    print(encoded)
+    # encoded = encode("Hi Martin, would you like to have a nice cup of tea with Santas? Thanks, Jean-François")
+    # print(encoded)
 
-    decoded = decode(encoded)
-    print(decoded)
+    # decoded = decode(encoded)
+    # print(decoded)
+
+    make_fake_endgame(0)
