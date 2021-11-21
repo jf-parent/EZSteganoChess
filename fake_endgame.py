@@ -1,7 +1,10 @@
 from typing import List, Dict, Tuple
 from random import choice, randint, shuffle
 
-from chess import Square, Board, Piece
+import chess
+from chess import Square, Board, Piece, parse_square
+
+from util import render
 
 PIECE_POINTS = {
     "q": 9,
@@ -9,6 +12,10 @@ PIECE_POINTS = {
     "n": 3,
     "b": 3
 }
+FILES = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+FILES_IDX = {f:i for i,f in enumerate(FILES)}
+IDX_FILES = {i:f for i,f in enumerate(FILES)}
+RANKS = range(8)
 
 def get_pieces(config: Dict = None) -> Tuple[List[Piece], List[Piece], int, int]:
     if not config:
@@ -37,7 +44,7 @@ def get_pieces(config: Dict = None) -> Tuple[List[Piece], List[Piece], int, int]
     nb_black_pieces -= 1
 
     # Add pawns
-    nb_white_pawns = min(nb_white_pieces, randint(1, 7))
+    nb_white_pawns = min(nb_white_pieces, randint(1, 6))
     nb_black_pawns = min(nb_black_pieces, nb_white_pawns)
     white_pieces.extend([Piece.from_symbol('P')]*nb_white_pawns)
     black_pieces.extend([Piece.from_symbol('p')]*nb_black_pawns)
@@ -45,7 +52,7 @@ def get_pieces(config: Dict = None) -> Tuple[List[Piece], List[Piece], int, int]
     nb_black_pieces -= nb_black_pawns
 
     # Add minor/major pieces
-    pool_pieces = ['q', 'n', 'r', 'b']
+    pool_pieces = ['q', 'n', 'n', 'b', 'b', 'r', 'r']
     shuffle(pool_pieces)
     white_remaining_point = 10
     while nb_white_pieces > 0 and white_remaining_point > 0:
@@ -54,7 +61,7 @@ def get_pieces(config: Dict = None) -> Tuple[List[Piece], List[Piece], int, int]
         nb_white_pieces -= 1
         white_pieces.append(Piece.from_symbol(piece.upper()))
 
-    pool_pieces = ['q', 'n', 'r', 'b']
+    pool_pieces = ['q', 'n', 'n', 'b', 'b', 'r', 'r']
     shuffle(pool_pieces)
     black_remaining_point = 10
     while nb_black_pieces > 0 and black_remaining_point > 0:
@@ -70,37 +77,77 @@ def get_pawn_formation(nb_white_pawns: int, nb_black_pawns: int, config: Dict = 
     if not config:
         config = {}
 
-    formations = ['entangled_1_island', 'far_1_island']
+    formations = ['1_island']
     if nb_white_pawns > 3 or nb_black_pawns > 3:
         formations.extend([
-            'entangled_2_islands',
-            'far_2_islands',
-            'mixed_2_islands',
-            'entangled_1_island_doubled_pawns',
-            'far_1_islaned_doubled_pawns',
-            'entangled_2_islands_doubled_pawns',
-            'far_2_islands_doubled_pawns',
-            'mixed_2_islands_doubled_pawns'
+            '1_island_doubled_pawns',
+            '2_islands',
+            '2_islands_doubled_pawns'
         ])
 
     if nb_white_pawns > 5 or nb_black_pawns > 5:
         formations.extend([
-            'entangled_3_islands',
-            'far_3_islands',
-            'mixed_3_islands',
-            'entangled_3_islands_doubled_pawns',
-            'far_3_islands_doubled_pawns',
-            'mixed_3_islands_doubled_pawns',
-            'entangled_3_islands_tripled_pawns',
-            'far_3_islands_tripled_pawns',
-            'mixed_3_islands_tripled_pawns'
+            '3_islands',
+            '3_islands_doubled_pawns',
+            '3_islands_tripled_pawns'
         ])
 
     shuffle(formations)
     return formations[0]
 
+def pawn_placement(board, pawn_formation, nb_white_pawns, nb_black_pawns) -> Board:
+    _board = board.copy()
+    _nb_white_pawns = nb_white_pawns
+    _nb_black_pawns = nb_black_pawns
 
-def make_fake_endgame(char_position: Square, config: Dict = None) -> Board:
+    nb_pawns_starting_file = {
+        1: FILES.copy(),
+        2: ['A', 'B', 'C', 'D', 'E', 'F', 'G'],
+        3: ['A', 'B', 'C', 'D', 'E', 'F'],
+        4: ['A', 'B', 'C', 'D', 'E'],
+        5: ['A', 'B', 'C', 'D'],
+        6: ['A', 'B', 'C']
+    }
+    white_starting_rank = {
+        1: range(1, 6),
+        2: range(1, 6),
+        3: range(1, 6),
+        4: range(1, 5),
+        5: range(1, 4),
+        6: range(1, 4)
+    }
+
+    starting_files = nb_pawns_starting_file[nb_white_pawns].copy()
+    shuffle(starting_files)
+    file_idx = FILES_IDX[starting_files[0]]
+    white_rank = choice(white_starting_rank[nb_white_pawns])
+    # 1 island
+    while _nb_white_pawns > 0 or _nb_black_pawns > 0:
+        file_ = IDX_FILES[file_idx].lower()
+
+        white_rank += choice(range(-2, 2))
+        white_rank = max(1, min(6, white_rank))
+
+        black_rank = white_rank + choice(range(1, 5))
+        black_rank = min(6, black_rank)
+
+        white_square = parse_square(f"{file_}{white_rank+1}")
+        black_square = parse_square(f"{file_}{black_rank+1}")
+        if _nb_white_pawns:
+            _board.set_piece_at(white_square, Piece.from_symbol('p'))
+            _nb_white_pawns -= 1
+
+        if _nb_black_pawns:
+            _board.set_piece_at(black_square, Piece.from_symbol('P'))
+            _nb_black_pawns -= 1
+
+        file_idx += 1
+
+    print(render(_board))
+    return _board
+
+
+def make_fake_endgame(board: Board, char_position: Square, config: Dict = None) -> Board:
     if not config:
         config = {}
 
@@ -112,3 +159,8 @@ def make_fake_endgame(char_position: Square, config: Dict = None) -> Board:
 
     pawn_formation = get_pawn_formation(nb_white_pawns, nb_black_pawns)
     print(f"Pawn formation: {pawn_formation}")
+
+    board.clear_board()
+
+    _board = pawn_placement(board, 'far_1_island', nb_white_pawns, nb_black_pawns)
+    return _board

@@ -6,6 +6,7 @@ import chess
 from chess import Board, parse_square, Piece
 
 from fake_endgame import make_fake_endgame
+from util import render
 
 UNKNOWN_CHAR = '❏'
 
@@ -15,7 +16,7 @@ CHARS = [
     'u', 'v', 'w', 'x', 'y', 'z', '1', '2', '3', '4',
     '5', '6', '7', '8', '9', '0', '.', ',', '!', '?',
     ':', '#', '@', '{', '}', '(', ')', '[', ']', '/',
-    '*', ';', '$', '_', '=', '|', '/', '^', '%', '#', UNKNOWN_CHAR,
+    '*', ';', '$', '_', '=', '|', '/', '^', '%', '#',
     '-', '+', ' ', '\r'
 ]
 
@@ -31,38 +32,6 @@ def create_char_map() -> Tuple[Dict[str, str], Dict[int, str]]:
         char_to_square_map[CHARS[c_i]] = square
         c_i += 1
     return char_to_square_map, square_to_char_map
-
-def render(board: chess.Board) -> str:
-    """
-    Print a side-relative chess board with special chess characters.
-    """
-    board_string = list(str(board))
-    uni_pieces = {
-        "R": "♖",
-        "N": "♘",
-        "B": "♗",
-        "Q": "♕",
-        "K": "♔",
-        "P": "♙",
-        "r": "♜",
-        "n": "♞",
-        "b": "♝",
-        "q": "♛",
-        "k": "♚",
-        "p": "♟",
-        ".": "·",
-    }
-    for idx, char in enumerate(board_string):
-        if char in uni_pieces:
-            board_string[idx] = uni_pieces[char]
-    ranks = ["1", "2", "3", "4", "5", "6", "7", "8"]
-    display = []
-    for rank in "".join(board_string).split("\n"):
-        display.append(f"  {ranks.pop()} {rank}")
-    if board.turn == chess.BLACK:
-        display.reverse()
-    display.append("    a b c d e f g h")
-    return "\n" + "\n".join(display)
 
 def normalize(message: AnyStr) -> str:
     _message = message.lower()
@@ -130,4 +99,5 @@ if __name__ == "__main__":
     # decoded = decode(encoded)
     # print(decoded)
 
-    make_fake_endgame(0)
+    for _ in range(1000):
+        board = make_fake_endgame(Board(), 0)
