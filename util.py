@@ -3,18 +3,18 @@ import chess
 def render(board: chess.Board) -> str:
     board_string = list(str(board))
     uni_pieces = {
-        "R": "♖",
-        "N": "♘",
-        "B": "♗",
-        "Q": "♕",
-        "K": "♔",
-        "P": "♙",
-        "r": "♜",
-        "n": "♞",
-        "b": "♝",
-        "q": "♛",
-        "k": "♚",
-        "p": "♟",
+        "r": "♖",
+        "n": "♘",
+        "b": "♗",
+        "q": "♕",
+        "k": "♔",
+        "p": "♙",
+        "R": "♜",
+        "N": "♞",
+        "B": "♝",
+        "Q": "♛",
+        "K": "♚",
+        "P": "♟",
         ".": "·",
     }
     for idx, char in enumerate(board_string):

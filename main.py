@@ -99,5 +99,5 @@ if __name__ == "__main__":
     # decoded = decode(encoded)
     # print(decoded)
 
-    for _ in range(1000):
-        board = make_fake_endgame(Board(), 0)
+    for i in range(64):
+        board = make_fake_endgame(Board(), i)
