@@ -1,14 +1,7 @@
 * TODO
-** FakeEndgame
-*** Probabilitic
-*** Theme-based
-*** Select pieces
-*** Generate game
-** Character set
 ** Character mapping
 ** Settings (char-map-piece-waterfall,encoding-piece-waterfall,etc)
 ** Generate text with FENs
 ** Test
 ** Explanation
-
 * Usage

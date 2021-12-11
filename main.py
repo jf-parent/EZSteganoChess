@@ -5,7 +5,7 @@ from typing import AnyStr, List, Tuple, Dict
 import chess
 from chess import Board, parse_square, Piece
 
-from fake_endgame import make_fake_endgame
+from fake_endgame import make_fake_endgame, get_encoding_piece, PIECE_WATERFALL
 from util import render
 
 UNKNOWN_CHAR = '❏'
@@ -16,12 +16,9 @@ CHARS = [
     'u', 'v', 'w', 'x', 'y', 'z', '1', '2', '3', '4',
     '5', '6', '7', '8', '9', '0', '.', ',', '!', '?',
     ':', '#', '@', '{', '}', '(', ')', '[', ']', '/',
-    '*', ';', '$', '_', '=', '|', '/', '^', '%', '#',
+    '*', ';', '$', '_', '=', '|', '/', '^', '%', '❏',
     '-', '+', ' ', '\r'
 ]
-
-def create_char_map_piece_waterfall() -> List[str]:
-    pass
 
 def create_char_map() -> Tuple[Dict[str, str], Dict[int, str]]:
     square_to_char_map = {}
@@ -50,16 +47,21 @@ def decode(fens: List[str]) -> str:
 
         board.set_fen(fen)
 
+        pieces = []
+        for piece in PIECE_WATERFALL:
+            pieces.extend([piece]*len(board.pieces(piece.piece_type, piece.color)))
+        encoding_piece = get_encoding_piece(pieces, PIECE_WATERFALL)
+
         eff_square = -1
         for square in chess.SQUARES:
-            if black_queen == board.piece_at(square):
+            if encoding_piece == board.piece_at(square):
                 eff_square = square
                 break
 
         c = square_to_char_map.get(eff_square, UNKNOWN_CHAR)
 
-        # print(f"Character: {c}")
-        # print(render(board))
+        print(f"Character: {c}")
+        print(render(board))
 
         decoded_chars.append(c)
 
@@ -81,11 +83,12 @@ def encode(message: AnyStr) -> List[str]:
         if square is None:
             square = char_to_square_map[UNKNOWN_CHAR]
 
-        board.set_piece_at(square, Piece.from_symbol('q'))
+        #board.set_piece_at(square, Piece.from_symbol('q'))
+        board = make_fake_endgame(board, square)
 
-        # print(f"Character: {c}")
-        # print(render(board))
-        # print(board.fen())
+        print(f"Character: {c}")
+        print(render(board))
+        print(board.fen())
 
         encoded_message.append(board.fen())
 
@@ -93,11 +96,11 @@ def encode(message: AnyStr) -> List[str]:
 
 
 if __name__ == "__main__":
-    # encoded = encode("Hi Martin, would you like to have a nice cup of tea with Santas? Thanks, Jean-François")
-    # print(encoded)
+    encoded = encode("Hi Martin, would you like to have a nice cup of tea with Santas? Thanks, Jean-François")
+    print(encoded)
 
-    # decoded = decode(encoded)
-    # print(decoded)
+    decoded = decode(encoded)
+    print(decoded)
 
-    for i in range(64):
-        board = make_fake_endgame(Board(), i)
+    # for i in range(64):
+    #     board = make_fake_endgame(Board(), i)

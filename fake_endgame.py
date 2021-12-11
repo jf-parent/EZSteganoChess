@@ -6,6 +6,13 @@ from chess import Square, Board, Piece, parse_square, SQUARES
 
 from util import render
 
+PIECE_WATERFALL = [
+    Piece.from_symbol('Q'),
+    Piece.from_symbol('R'),
+    Piece.from_symbol('B'),
+    Piece.from_symbol('N'),
+    Piece.from_symbol('K')
+]
 MAX_ATTEMPT = 50
 PIECE_POINTS = {
     "q": 9,
@@ -19,7 +26,7 @@ IDX_FILES = {i:f for i,f in enumerate(FILES)}
 RANKS = range(8)
 
 TENTATIVE_SQUARES = {
-    'N': [
+    'n': [
         1, 2, 2, 2, 2, 2, 2, 1,
         10, 20, 25, 30, 30, 25, 20, 10,
         10, 20, 25, 30, 30, 25, 20, 10,
@@ -29,6 +36,36 @@ TENTATIVE_SQUARES = {
         10, 20, 25, 30, 30, 25, 20, 10,
         5, 10, 10, 10, 10, 10, 10, 5
     ],
+    'N': [
+        5, 10, 10, 10, 10, 10, 10, 5,
+        10, 20, 25, 30, 30, 25, 20, 10,
+        10, 20, 25, 30, 30, 25, 20, 10,
+        10, 20, 25, 30, 30, 25, 20, 10,
+        10, 20, 25, 30, 30, 25, 20, 10,
+        10, 20, 25, 30, 30, 25, 20, 10,
+        10, 20, 25, 30, 30, 25, 20, 10,
+        1, 2, 2, 2, 2, 2, 2, 1
+    ],
+    'k': [
+        1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 2, 3, 3, 2, 1, 1,
+        1, 1, 2, 3, 3, 2, 1, 1,
+        1, 1, 2, 3, 3, 2, 1, 1,
+        1, 1, 2, 50, 50, 2, 1, 1,
+        1, 1, 2, 50, 50, 2, 1, 10,
+        1, 50, 50, 50, 50, 50, 20, 1,
+        10, 50, 50, 50, 50, 50, 50, 10
+    ],
+    'K': [
+        10, 30, 30, 30, 30, 30, 30, 10,
+        10, 20, 25, 30, 30, 25, 20, 10,
+        10, 10, 25, 30, 30, 25, 10, 10,
+        10, 10, 20, 30, 30, 20, 10, 10,
+        10, 10, 20, 30, 30, 20, 10, 10,
+        1, 1, 20, 30, 30, 20, 1, 1,
+        1, 1, 20, 30, 30, 20, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 1
+    ]
 }
 
 def get_pieces(config: Dict = None) -> Tuple[List[Piece], List[Piece], int, int]:
@@ -161,11 +198,13 @@ def pawn_placement(board, pawn_formation, nb_white_pawns, nb_black_pawns) -> Boa
 
 def get_encoding_piece(pieces: List[Piece], piece_waterfall: List[Piece]) -> Piece:
     for p in piece_waterfall:
-        if pieces.count(p) < 2:
+        pcount = pieces.count(p)
+        if pcount == 1:
             return p
 
 def get_tentative_square(piece: Piece) -> Square:
-    return choices(SQUARES, TENTATIVE_SQUARES.get(piece.symbol()))[0]
+    #return choice(SQUARES)
+    return choices(SQUARES, weights=TENTATIVE_SQUARES.get(piece.symbol()))[0]
 
 def piece_placement(board: Board, char_position: Square, white_pieces: List[Piece], black_pieces: List[Piece], piece_waterfall: List[Piece]) -> Board:
     _board = board.copy()
@@ -177,15 +216,16 @@ def piece_placement(board: Board, char_position: Square, white_pieces: List[Piec
     else:
         _board.set_piece_at(char_position, encoding_piece)
 
-    # White King
-    white_king = Piece.from_symbol('K')
-    for i in range(MAX_ATTEMPT):
-        tentative_square = get_tentative_square(white_king)
-        if not _board.piece_at(tentative_square):
-            _board.set_piece_at(tentative_square, white_king)
-            break
-    else:
-        raise Exception("MAX_ATTEMPT reached: unable to place {piece} on the board!")
+    if encoding_piece != Piece.from_symbol('K'):
+        # White King
+        white_king = Piece.from_symbol('K')
+        for i in range(MAX_ATTEMPT):
+            tentative_square = get_tentative_square(white_king)
+            if not _board.piece_at(tentative_square):
+                _board.set_piece_at(tentative_square, white_king)
+                break
+        else:
+            raise Exception("MAX_ATTEMPT reached: unable to place {piece} on the board!")
 
     # Black King
     black_king = Piece.from_symbol('k')
@@ -227,28 +267,22 @@ def make_fake_endgame(board: Board, char_position: Square, config: Dict = None) 
     if not config:
         config = {}
 
-    piece_waterfall = [
-        Piece.from_symbol('Q'),
-        Piece.from_symbol('R'),
-        Piece.from_symbol('B'),
-        Piece.from_symbol('N'),
-        Piece.from_symbol('K')
-    ]
     white_pieces, black_pieces, nb_white_pawns, nb_black_pawns = get_pieces()
 
-    print(f"White: {white_pieces}")
-    print(f"Black: {black_pieces}")
-    print(f"Nb white pawns: {nb_white_pawns}")
-    print(f"Nb black pawns: {nb_black_pawns}")
+    # print(f"White: {white_pieces}")
+    # print(f"Black: {black_pieces}")
+    # print(f"Nb white pawns: {nb_white_pawns}")
+    # print(f"Nb black pawns: {nb_black_pawns}")
+    # print(f"Encoding piece: {char_position}")
 
     pawn_formation = get_pawn_formation(nb_white_pawns, nb_black_pawns)
-    print(f"Pawn formation: {pawn_formation}")
+    #print(f"Pawn formation: {pawn_formation}")
 
     board.clear_board()
 
     _board = pawn_placement(board, 'far_1_island', nb_white_pawns, nb_black_pawns)
 
-    _board = piece_placement(_board, char_position, white_pieces, black_pieces, piece_waterfall)
+    _board = piece_placement(_board, char_position, white_pieces, black_pieces, PIECE_WATERFALL)
 
-    print(render(_board))
+    #print(render(_board))
     return _board
