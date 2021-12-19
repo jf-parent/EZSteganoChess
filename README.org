@@ -1,7 +1,1 @@
-* TODO
-** Character mapping
-** Settings (char-map-piece-waterfall,encoding-piece-waterfall,etc)
-** Generate text with FENs
-** Test
-** Explanation
-* Usage
+Hide message in chess endgame using FEN.

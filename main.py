@@ -2,6 +2,7 @@
 
 from typing import AnyStr, List, Tuple, Dict
 
+# pip install chess
 import chess
 from chess import Board, parse_square, Piece
 
@@ -16,7 +17,7 @@ CHARS = [
     'u', 'v', 'w', 'x', 'y', 'z', '1', '2', '3', '4',
     '5', '6', '7', '8', '9', '0', '.', ',', '!', '?',
     ':', '#', '@', '{', '}', '(', ')', '[', ']', '/',
-    '*', ';', '$', '_', '=', '|', '/', '^', '%', '❏',
+    '*', ';', '$', '_', '=', '|', '/', '^', '%', UNKNOWN_CHAR,
     '-', '+', ' ', '\r'
 ]
 
@@ -32,12 +33,9 @@ def create_char_map() -> Tuple[Dict[str, str], Dict[int, str]]:
 
 def normalize(message: AnyStr) -> str:
     _message = message.lower()
-
     return _message
 
 def decode(fens: List[str]) -> str:
-    black_queen = Piece(chess.Piece.from_symbol('q').piece_type, False)
-
     decoded_chars = []
 
     _, square_to_char_map = create_char_map()
@@ -83,7 +81,6 @@ def encode(message: AnyStr) -> List[str]:
         if square is None:
             square = char_to_square_map[UNKNOWN_CHAR]
 
-        #board.set_piece_at(square, Piece.from_symbol('q'))
         board = make_fake_endgame(board, square)
 
         print(f"Character: {c}")
@@ -96,11 +93,9 @@ def encode(message: AnyStr) -> List[str]:
 
 
 if __name__ == "__main__":
-    encoded = encode("Hi Martin, would you like to have a nice cup of tea with Santas? Thanks, Jean-François")
+    encoded = encode("Hi Bob, would you like to have a nice cup of tea with Ïgor? Thanks, Alice")
     print(encoded)
 
     decoded = decode(encoded)
     print(decoded)
-
-    # for i in range(64):
-    #     board = make_fake_endgame(Board(), i)
+    assert decoded == "hi bob, would you like to have a nice cup of tea with ❏gor? thanks, alice"
